@@ -7,36 +7,59 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 public class DAO {
-	private final DataSource myDataSource;
-	
-	public DAO(DataSource dataSource) {
-		myDataSource = dataSource;
-	}
+    private final DataSource myDataSource;
 
-	/**
-	 * Renvoie le nom d'un client à partir de son ID
-	 * @param id la clé du client à chercher
-	 * @return le nom du client (LastName) ou null si pas trouvé
-	 * @throws SQLException 
-	 */
-	public String nameOfCustomer(int id) throws SQLException {
-		String result = null;
-		
-		String sql = "SELECT LastName FROM Customer WHERE ID = ?";
-		try (Connection myConnection = myDataSource.getConnection(); 
-		     PreparedStatement statement = myConnection.prepareStatement(sql)) {
-			statement.setInt(1, id); // On fixe le 1° paramètre de la requête
-			try ( ResultSet resultSet = statement.executeQuery()) {
-				if (resultSet.next()) {
-					// est-ce qu'il y a un résultat ? (pas besoin de "while", 
-                                        // il y a au plus un enregistrement)
-					// On récupère les champs de l'enregistrement courant
-					result = resultSet.getString("LastName");
-				}
-			}
-		}
-		// dernière ligne : on renvoie le résultat
-		return result;
-	}
-	
+    public DAO(DataSource dataSource) {
+            myDataSource = dataSource;
+    }
+
+    /**
+     * Renvoie le nom d'un client à partir de son ID
+     * @param id la clé du client à chercher
+     * @return le nom du client (LastName) ou null si pas trouvé
+     * @throws SQLException 
+     */
+    public String nameOfCustomer(int id) throws SQLException {
+        String result = null;
+
+        String sql = "SELECT LastName FROM Customer WHERE ID = ?";
+        try (Connection myConnection = myDataSource.getConnection(); 
+            PreparedStatement statement = myConnection.prepareStatement(sql)) {
+               statement.setInt(1, id); // On fixe le 1° paramètre de la requête
+               try ( ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        // est-ce qu'il y a un résultat ? (pas besoin de "while", 
+                        // il y a au plus un enregistrement)
+                        // On récupère les champs de l'enregistrement courant
+                        result = resultSet.getString("LastName");
+                    }
+               }
+        }
+        // dernière ligne : on renvoie le résultat
+        return result;
+    }
+
+    /**
+     * TDOD
+     */
+    public ProductEntity findProduct( int productId ) throws SQLException {
+        ProductEntity result = null ; 
+        String sql = "SELECT * AS produit FROM PRODUCT WHERE PRODUCT_ID = ?";
+        try (Connection connection = myDataSource.getConnection(); // On crée un statement pour exécuter une requête
+            PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            stmt.setInt(1, productId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) { // On a trouvé
+                    String name = rs.getString("NAME");
+                    double price = rs.getDouble("PRICE");
+                    // On crée l'objet "entity"
+                    result = new ProductEntity( productId, name, price );
+                } // else on n'a pas trouvé, on renverra null
+            }
+        }
+
+        return result;
+    }
 }
+
